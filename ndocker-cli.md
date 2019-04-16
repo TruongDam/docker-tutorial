@@ -1,6 +1,23 @@
 Ref: 
 * https://docs.docker.com/machine/reference/
 * https://docs.docker.com/get-started/
+* [10 docker cli commands you should know](https://medium.com/the-code-review/top-10-docker-commands-you-cant-live-without-54fb6377f481)
+
+## 10 docker cli commands
+```
+docker ps //lists running containers
+docker pull  //pull a docker image from Docker Hub
+docker build  //build a Docker Image from Dockerfile and context
+docker run //Run a docker container based on a docker image
+docker logs  //display the logs of a container
+docker volume ls
+docker rm  //removes one or more docker containers
+docker rmi //remove one or more images
+docker stop //stop one or more containers
+docker kill $(docker ps -q)  //kill all running containers
+docker rm $(docker ps -a -q)  //delete all stopped containers
+docker rmi $(docker images -q)  //delete all images
+```
 
 ## Test Docker version
 * Run docker --version and ensure that you have a supported version of Docker
@@ -151,8 +168,3 @@ friendlyhello         latest              326387cea398
 docker run -p 4000:80 friendlyhello
 ```
 You should see a message that Python is serving your app at http://0.0.0.0:80. But that message is coming from inside the container, which doesn’t know you mapped port 80 of that container to 4000, making the correct URL http://localhost:4000
-
-
-
-
-
