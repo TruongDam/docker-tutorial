@@ -1,3 +1,7 @@
+Ref: 
+* https://docs.docker.com/machine/reference/
+* https://docs.docker.com/get-started/
+
 ## Test Docker version
 * Run docker --version and ensure that you have a supported version of Docker
 
@@ -58,3 +62,97 @@ docker container ls
 docker container ls --all
 docker container ls -aq
 ```
+* Folder contains docker images on host machine
+
+The contents of the ```/var/lib/docker``` directory vary depending on the driver Docker is using for storage.
+Ref: [link](https://stackoverflow.com/questions/19234831/where-are-docker-images-stored-on-the-host-machine)
+
+## Containers
+* Define a container with ```Dockerfile```
+
+Create an empty directory on your local machine. Change directories (cd) into the new directory, create a file called Dockerfile, copy-and-paste the following content into that file, and save it. Take note of the comments that explain each statement in your new Dockerfile.
+
+```
+# Use an official Python runtime as a parent image
+FROM python:2.7-slim
+
+# Set the working directory to /app
+WORKDIR /app
+
+# Copy the current directory contents into the container at /app
+COPY . /app
+
+# Install any needed packages specified in requirements.txt
+RUN pip install --trusted-host pypi.python.org -r requirements.txt
+
+# Make port 80 available to the world outside this container
+EXPOSE 80
+
+# Define environment variable
+ENV NAME World
+
+# Run app.py when the container launches
+CMD ["python", "app.py"]
+
+```
+* Create app: Create 2 files, ```requirements.txt``` and ```app.py```, and put them in the same folder with ```Dockerfile```.
+requirements.txt
+```
+Flask
+Redis
+```
+app.py
+```
+rom flask import Flask
+from redis import Redis, RedisError
+import os
+import socket
+
+# Connect to Redis
+redis = Redis(host="redis", db=0, socket_connect_timeout=2, socket_timeout=2)
+
+app = Flask(__name__)
+
+@app.route("/")
+def hello():
+    try:
+        visits = redis.incr("counter")
+    except RedisError:
+        visits = "<i>cannot connect to Redis, counter disabled</i>"
+
+    html = "<h3>Hello {name}!</h3>" \
+           "<b>Hostname:</b> {hostname}<br/>" \
+           "<b>Visits:</b> {visits}"
+    return html.format(name=os.getenv("NAME", "world"), hostname=socket.gethostname(), visits=visits)
+
+if __name__ == "__main__":
+    app.run(host='0.0.0.0', port=80)
+```
+
+* Build app
+```
+$ ls
+Dockerfile		app.py			requirements.txt
+```
+Now run the build command. This creates a Docker image, which we’re going to name using the --tag option. Use -t if you want to use the shorter option.
+```
+docker build --tag=friendlyhello .
+```
+Where is your built image? It’s in your machine’s local Docker image registry:
+```
+$ docker image ls
+
+REPOSITORY            TAG                 IMAGE ID
+friendlyhello         latest              326387cea398
+```
+
+* Run the app
+```
+docker run -p 4000:80 friendlyhello
+```
+You should see a message that Python is serving your app at http://0.0.0.0:80. But that message is coming from inside the container, which doesn’t know you mapped port 80 of that container to 4000, making the correct URL http://localhost:4000
+
+
+
+
+
